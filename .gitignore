@@ -1,0 +1,8 @@
+build
+bower_components
+.gradle
+.idea
+.vertx
+.env
+*.iml
+audit-db*
