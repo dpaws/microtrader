@@ -28,7 +28,7 @@ public class RestQuoteAPIVerticle extends AbstractVerticle {
 
         vertx.createHttpServer()
                 .requestHandler(request -> {
-                    HttpServerResponse response = request.response().putHeader("content-type", "application/json");
+                    HttpServerResponse response = request.response().putHeader("Content-Type", "application/json");
                     String company = request.getParam("name");
                     if (company == null) {
                         String content = Json.encodePrettily(quotes);

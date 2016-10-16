@@ -122,7 +122,10 @@ public class AuditVerticle extends MicroserviceVerticle {
             Future<List<JsonObject>> jdbcFuture = retrieveOperations();
             jdbcFuture.setHandler(jdbc -> {
                 if (jdbc.succeeded()) {
-                    context.response().setStatusCode(200).end(Json.encodePrettily(jdbcFuture.result()));
+                    context.response()
+                            .putHeader("Content-Type", "application/json")
+                            .setStatusCode(200)
+                            .end(Json.encodePrettily(jdbcFuture.result()));
                 } else {
                     context.response().setStatusCode(500).end(jdbc.cause().toString());
                 }
