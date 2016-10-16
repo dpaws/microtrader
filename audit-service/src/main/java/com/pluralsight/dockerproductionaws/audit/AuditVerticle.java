@@ -59,7 +59,7 @@ public class AuditVerticle extends MicroserviceVerticle {
         Future<HttpServer> httpEndpointReady = configureTheHTTPServer();
         httpEndpointReady.setHandler(ar -> {
            if (ar.succeeded()) {
-               MessageConsumer<JsonObject> portfolioConsumer = eventBus.consumer(config.getString("portfolio.events"));
+               MessageConsumer<JsonObject> portfolioConsumer = eventBus.consumer(config.getString("portfolio.address"));
                portfolioConsumer.handler(message -> {
                    storeInDatabase(message.body());
                });

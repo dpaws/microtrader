@@ -57,7 +57,7 @@ public class AuditVerticleTest {
     public void testSetup(TestContext context) {
         Async async = context.async();
         config = ConfigFactory.load();
-        portfolioAddr = config.getString("portfolio.events");
+        portfolioAddr = config.getString("portfolio.address");
         vertx = Vertx.vertx();
         Migrate.main(null);
         vertx.deployVerticle(AuditVerticle.class.getName(), ar -> {
