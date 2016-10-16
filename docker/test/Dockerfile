@@ -5,22 +5,14 @@ LABEL application=microtrader-dev
 # Install system dependencies
 RUN echo "http://nl.alpinelinux.org/alpine/edge/testing/" >> /etc/apk/repositories && \
     apk update && \
-    apk add --no-cache bash confd libstdc++ nodejs git && \
-    npm install bower -g && \
-    mkdir -p /app/conf
-
-# Copy common confd templates
-COPY docker/test/etc/confd /etc/confd
-
-# Set entrypoint
-COPY docker/test/entrypoint.sh /app/entrypoint.sh
-ENTRYPOINT ["/app/entrypoint.sh"]
-WORKDIR /app/
+    apk add --no-cache bash libstdc++ nodejs git && \
+    npm install bower -g
 
 # Install common dependencies
 ENV APP_VERSION=snapshot
 COPY gradle /app/gradle
 COPY build.gradle settings.gradle gradlew /app/
+WORKDIR /app/
 RUN ./gradlew copyDeps
 
 # Install module dependencies
