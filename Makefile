@@ -51,32 +51,31 @@ test: init
 # Use 'make release nopull' to disable default pull behaviour
 release: init
 	${INFO} "Pulling latest images..."
-	@ $(if $(NOPULL_ARG),,docker-compose $(RELEASE_ARGS) pull db quote-agent audit-agent)
+	@ $(if $(NOPULL_ARG),,docker-compose $(RELEASE_ARGS) pull db quote-agent audit-agent specs)
 	${INFO} "Building images..."
 	@ docker-compose $(RELEASE_ARGS) build $(NOPULL_FLAG) trader-dashboard quote-generator audit-service portfolio-service
 	${INFO} "Starting audit database..."
-	@ docker-compose $(RELEASE_ARGS) run audit-agent
+	@ docker-compose $(RELEASE_ARGS) run audit-db-agent
 	${INFO} "Running audit migrations..."
 	@ docker-compose $(RELEASE_ARGS) run audit-service java -cp /app/app.jar com.pluralsight.dockerproductionaws.admin.Migrate
 	${INFO} "Starting audit service..."
-	@ docker-compose $(RELEASE_ARGS) up -d audit-service
+	@ docker-compose $(RELEASE_ARGS) run audit-agent
 	${INFO} "Starting portfolio service..."
 	@ docker-compose $(RELEASE_ARGS) up -d portfolio-service
-	${INFO} "Starting trader dashboard..."
-	@ docker-compose $(RELEASE_ARGS) run trader-agent
 	${INFO} "Starting quote generator..."
 	@ docker-compose $(RELEASE_ARGS) run quote-agent
+	${INFO} "Starting trader dashboard..."
+	@ docker-compose $(RELEASE_ARGS) run trader-agent
 	${INFO} "Release environment created"
+	${INFO} "Running acceptance tests..."
+	@ docker-compose $(RELEASE_ARGS) up specs
+	@ docker cp $$(docker-compose $(RELEASE_ARGS) ps -q specs):/reports/. build/test-results/specs/
+	${CHECK} $(REL_PROJECT) $(REL_COMPOSE_FILE) specs
+	${INFO} "Acceptance testing complete"
 	${INFO} "Quote REST endpoint is running at http://$(DOCKER_MACHINE_IP):$(call get_port_mapping,$(RELEASE_ARGS),quote-generator,$(HTTP_PORT))$(QUOTE_HTTP_ROOT)"
 	${INFO} "Audit REST endpoint is running at http://$(DOCKER_MACHINE_IP):$(call get_port_mapping,$(RELEASE_ARGS),audit-service,$(HTTP_PORT))$(AUDIT_HTTP_ROOT)"
 	${INFO} "Trader dashboard is running at http://$(DOCKER_MACHINE_IP):$(call get_port_mapping,$(RELEASE_ARGS),trader-dashboard,$(HTTP_PORT))"
 
-# ${INFO} "Running acceptance tests..."
-# @ docker-compose $(RELEASE_ARGS) run agent
-# @ docker-compose $(RELEASE_ARGS) up test
-# @ docker cp $$(docker-compose $(RELEASE_ARGS) ps -q test):/app/target/surefire-reports/. reports
-# ${CHECK} $(REL_PROJECT) $(REL_COMPOSE_FILE) test
-# ${INFO} "Acceptance testing complete"
 
 # Executes a full workflow
 all: clean test release

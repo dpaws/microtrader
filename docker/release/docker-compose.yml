@@ -16,6 +16,18 @@ networks:
 # HTTP_PUBLIC_PORT:   The port that will be registered in service discovery
 #                     If using an external load balancer, set this value to the port of the external load balancer
 services:
+  specs:
+    image: dpaws/microtrader-specs
+    environment:
+      QUOTE_URL: http://quote-generator:${HTTP_PORT}/${QUOTE_HTTP_ROOT}
+      AUDIT_URL: http://audit-service:${HTTP_PORT}/${AUDIT_HTTP_ROOT}
+      DASHBOARD_URL: http://trader-dashboard:${HTTP_PORT}/
+      EVENT_BUS_URL: http://trader-dashboard:${HTTP_PORT}/eventbus/
+      JUNIT_REPORT_PATH: /reports/acceptance.xml
+      JUNIT_REPORT_STACK: 1
+    command: 
+      - "--reporter"
+      - "mocha-jenkins-reporter"
   trader-dashboard:
     build:
       context: ../../
@@ -99,13 +111,20 @@ services:
     environment:
       PROBE_HOST: quote-generator
       PROBE_PORT: ${HTTP_PORT}
-  audit-agent:
+  audit-db-agent:
     image: dpaws/ansible
     links:
       - db
     environment:
       PROBE_HOST: db
       PROBE_PORT: 3306
+  audit-agent:
+    image: dpaws/ansible
+    links:
+      - audit-service
+    environment:
+      PROBE_HOST: audit-service
+      PROBE_PORT: ${HTTP_PORT}
   trader-agent:
     image: dpaws/ansible
     links:
