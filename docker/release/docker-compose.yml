@@ -30,7 +30,7 @@ services:
     command: 
       - "--reporter"
       - "mocha-jenkins-reporter"
-  trader-dashboard:
+  microtrader-dashboard:
     build:
       context: ../../
       dockerfile: docker/release/Dockerfile.dashboard
@@ -46,7 +46,7 @@ services:
       _JAVA_OPTIONS: "-Xms256m -Xmx1g"
     ports:
       - "${HTTP_PORT}"
-  quote-generator:
+  microtrader-quote:
     build:
       context: ../../
       dockerfile: docker/release/Dockerfile.quote
@@ -55,7 +55,7 @@ services:
     dns_search: .
     environment:
       HTTP_ROOT: ${QUOTE_HTTP_ROOT}
-      HTTP_HOST: quote-generator
+      HTTP_HOST: microtrader-quote
       HTTP_PORT: ${HTTP_PORT}
       MARKET_DATA_ADDRESS: ${MARKET_DATA_ADDRESS}   # The event bus address that market data events will be published to
       MARKET_PERIOD: ${MARKET_PERIOD}               # The frequency in ms to generate market data events
@@ -63,7 +63,7 @@ services:
       CLUSTER_GROUP_PASSWORD: password
     ports:
       - "${HTTP_PORT}"
-  portfolio-service:
+  microtrader-portfolio:
     build:
       context: ../../
       dockerfile: docker/release/Dockerfile.portfolio
@@ -75,7 +75,7 @@ services:
       CLUSTER_GROUP_PASSWORD: password
     ports:
       - "${HTTP_PORT}"
-  audit-service:
+  microtrader-audit:
     build:
       context: ../../
       dockerfile: docker/release/Dockerfile.audit
@@ -86,7 +86,7 @@ services:
       - db
     environment:
       HTTP_ROOT: ${AUDIT_HTTP_ROOT}
-      HTTP_HOST: audit-service
+      HTTP_HOST: microtrader-audit
       HTTP_PORT: ${HTTP_PORT}
       HTTP_PUBLIC_PORT: ${HTTP_PORT}
       CLUSTER_GROUP_NAME: microtrader
@@ -109,9 +109,9 @@ services:
   quote-agent:
     image: dpaws/ansible
     links:
-      - quote-generator
+      - microtrader-quote
     environment:
-      PROBE_HOST: quote-generator
+      PROBE_HOST: microtrader-quote
       PROBE_PORT: ${HTTP_PORT}
   audit-db-agent:
     image: dpaws/ansible
@@ -123,14 +123,14 @@ services:
   audit-agent:
     image: dpaws/ansible
     links:
-      - audit-service
+      - microtrader-audit
     environment:
-      PROBE_HOST: audit-service
+      PROBE_HOST: microtrader-audit
       PROBE_PORT: ${HTTP_PORT}
   trader-agent:
     image: dpaws/ansible
     links:
-      - trader-dashboard
+      - microtrader-dashboard
     environment:
-      PROBE_HOST: trader-dashboard
+      PROBE_HOST: microtrader-dashboard
       PROBE_PORT: ${HTTP_PORT}

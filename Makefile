@@ -51,30 +51,30 @@ test: init
 # Use 'make release nopull' to disable default pull behaviour
 release: init
 	${INFO} "Pulling latest images..."
-	@ $(if $(NOPULL_ARG),,docker-compose $(RELEASE_ARGS) pull db quote-agent audit-agent specs)
+	@ $(if $(NOPULL_ARG),,docker-compose $(RELEASE_ARGS) pull db quote-agent audit-agent)
 	${INFO} "Building images..."
-	@ docker-compose $(RELEASE_ARGS) build $(NOPULL_FLAG) trader-dashboard quote-generator audit-service portfolio-service
+	@ docker-compose $(RELEASE_ARGS) build $(NOPULL_FLAG) microtrader-dashboard microtrader-quote microtrader-audit microtrader-portfolio microtrader-specs
 	${INFO} "Starting audit database..."
 	@ docker-compose $(RELEASE_ARGS) run audit-db-agent
 	${INFO} "Running audit migrations..."
-	@ docker-compose $(RELEASE_ARGS) run audit-service java -cp /app/app.jar com.pluralsight.dockerproductionaws.admin.Migrate
+	@ docker-compose $(RELEASE_ARGS) run microtrader-audit java -cp /app/app.jar com.pluralsight.dockerproductionaws.admin.Migrate
 	${INFO} "Starting audit service..."
 	@ docker-compose $(RELEASE_ARGS) run audit-agent
 	${INFO} "Starting portfolio service..."
-	@ docker-compose $(RELEASE_ARGS) up -d portfolio-service
+	@ docker-compose $(RELEASE_ARGS) up -d microtrader-portfolio
 	${INFO} "Starting quote generator..."
 	@ docker-compose $(RELEASE_ARGS) run quote-agent
 	${INFO} "Starting trader dashboard..."
 	@ docker-compose $(RELEASE_ARGS) run trader-agent
 	${INFO} "Release environment created"
 	${INFO} "Running acceptance tests..."
-	@ docker-compose $(RELEASE_ARGS) up specs
-	@ docker cp $$(docker-compose $(RELEASE_ARGS) ps -q specs):/reports/. build/test-results/specs/
-	${CHECK} $(REL_PROJECT) $(REL_COMPOSE_FILE) specs
+	@ docker-compose $(RELEASE_ARGS) up microtrader-specs
+	@ docker cp $$(docker-compose $(RELEASE_ARGS) ps -q microtrader-specs):/reports/. build/test-results/specs/
+	${CHECK} $(REL_PROJECT) $(REL_COMPOSE_FILE) microtrader-specs
 	${INFO} "Acceptance testing complete"
-	${INFO} "Quote REST endpoint is running at http://$(DOCKER_MACHINE_IP):$(call get_port_mapping,$(RELEASE_ARGS),quote-generator,$(HTTP_PORT))$(QUOTE_HTTP_ROOT)"
-	${INFO} "Audit REST endpoint is running at http://$(DOCKER_MACHINE_IP):$(call get_port_mapping,$(RELEASE_ARGS),audit-service,$(HTTP_PORT))$(AUDIT_HTTP_ROOT)"
-	${INFO} "Trader dashboard is running at http://$(DOCKER_MACHINE_IP):$(call get_port_mapping,$(RELEASE_ARGS),trader-dashboard,$(HTTP_PORT))"
+	${INFO} "Quote REST endpoint is running at http://$(DOCKER_MACHINE_IP):$(call get_port_mapping,$(RELEASE_ARGS),microtrader-quote,$(HTTP_PORT))$(QUOTE_HTTP_ROOT)"
+	${INFO} "Audit REST endpoint is running at http://$(DOCKER_MACHINE_IP):$(call get_port_mapping,$(RELEASE_ARGS),microtrader-audit,$(HTTP_PORT))$(AUDIT_HTTP_ROOT)"
+	${INFO} "Trader dashboard is running at http://$(DOCKER_MACHINE_IP):$(call get_port_mapping,$(RELEASE_ARGS),microtrader-dashboard,$(HTTP_PORT))"
 
 
 # Executes a full workflow
@@ -102,10 +102,10 @@ tag: init
 	${INFO} "Tagging development image with tags $(TAG_ARGS)..."
 	@ $(foreach tag,$(TAG_ARGS), echo $(call get_image_id,$(TEST_ARGS),test) | xargs -I ARG docker tag ARG $(DOCKER_REGISTRY)/$(ORG_NAME)/$(TEST_REPO_NAME):$(tag);)
 	${INFO} "Tagging release images with tags $(TAG_ARGS)..."
-	@ $(foreach tag,$(TAG_ARGS), echo $(call get_image_id,$(RELEASE_ARGS),quote-generator) | xargs -I ARG docker tag ARG $(DOCKER_REGISTRY)/$(ORG_NAME)/quote-generator:$(tag);)
-	@ $(foreach tag,$(TAG_ARGS), echo $(call get_image_id,$(RELEASE_ARGS),audit-service) | xargs -I ARG docker tag ARG $(DOCKER_REGISTRY)/$(ORG_NAME)/audit-service:$(tag);)
-	@ $(foreach tag,$(TAG_ARGS), echo $(call get_image_id,$(RELEASE_ARGS),portfolio-service) | xargs -I ARG docker tag ARG $(DOCKER_REGISTRY)/$(ORG_NAME)/portfolio-service:$(tag);)
-	@ $(foreach tag,$(TAG_ARGS), echo $(call get_image_id,$(RELEASE_ARGS),trader-dashboard) | xargs -I ARG docker tag ARG $(DOCKER_REGISTRY)/$(ORG_NAME)/trader-dashboard:$(tag);)
+	@ $(foreach tag,$(TAG_ARGS), echo $(call get_image_id,$(RELEASE_ARGS),microtrader-quote) | xargs -I ARG docker tag ARG $(DOCKER_REGISTRY)/$(ORG_NAME)/microtrader-quote:$(tag);)
+	@ $(foreach tag,$(TAG_ARGS), echo $(call get_image_id,$(RELEASE_ARGS),microtrader-audit) | xargs -I ARG docker tag ARG $(DOCKER_REGISTRY)/$(ORG_NAME)/microtrader-audit:$(tag);)
+	@ $(foreach tag,$(TAG_ARGS), echo $(call get_image_id,$(RELEASE_ARGS),microtrader-portfolio) | xargs -I ARG docker tag ARG $(DOCKER_REGISTRY)/$(ORG_NAME)/microtrader-portfolio:$(tag);)
+	@ $(foreach tag,$(TAG_ARGS), echo $(call get_image_id,$(RELEASE_ARGS),microtrader-dashboard) | xargs -I ARG docker tag ARG $(DOCKER_REGISTRY)/$(ORG_NAME)/microtrader-dashboard:$(tag);)
 	${INFO} "Tagging complete"
 
 # Login to Docker registry
@@ -125,10 +125,10 @@ publish:
 	${INFO} "Publishing development image $(call get_image_id,$(TEST_ARGS),test) to $(DOCKER_REGISTRY)/$(ORG_NAME)/$(TEST_REPO_NAME)..."
 	@ for tag in $(call get_repo_tags,$(TEST_ARGS),test,$(DOCKER_REGISTRY)/$(ORG_NAME)/$(TEST_REPO_NAME)); do echo $$tag | xargs -I TAG docker push TAG; done
 	${INFO} "Publishing release images to $(DOCKER_REGISTRY)/$(ORG_NAME)..."
-	@ for tag in $(call get_repo_tags,$(RELEASE_ARGS),quote-generator,$(DOCKER_REGISTRY)/$(ORG_NAME)/quote-generator); do echo $$tag | xargs -I TAG docker push TAG; done
-	@ for tag in $(call get_repo_tags,$(RELEASE_ARGS),audit-service,$(DOCKER_REGISTRY)/$(ORG_NAME)/audit-service); do echo $$tag | xargs -I TAG docker push TAG; done
-	@ for tag in $(call get_repo_tags,$(RELEASE_ARGS),portfolio-service,$(DOCKER_REGISTRY)/$(ORG_NAME)/portfolio-service); do echo $$tag | xargs -I TAG docker push TAG; done
-	@ for tag in $(call get_repo_tags,$(RELEASE_ARGS),trader-dashboard,$(DOCKER_REGISTRY)/$(ORG_NAME)/trader-dashboard); do echo $$tag | xargs -I TAG docker push TAG; done
+	@ for tag in $(call get_repo_tags,$(RELEASE_ARGS),microtrader-quote,$(DOCKER_REGISTRY)/$(ORG_NAME)/microtrader-quote); do echo $$tag | xargs -I TAG docker push TAG; done
+	@ for tag in $(call get_repo_tags,$(RELEASE_ARGS),microtrader-audit,$(DOCKER_REGISTRY)/$(ORG_NAME)/microtrader-audit); do echo $$tag | xargs -I TAG docker push TAG; done
+	@ for tag in $(call get_repo_tags,$(RELEASE_ARGS),microtrader-portfolio,$(DOCKER_REGISTRY)/$(ORG_NAME)/microtrader-portfolio); do echo $$tag | xargs -I TAG docker push TAG; done
+	@ for tag in $(call get_repo_tags,$(RELEASE_ARGS),microtrader-dashboard,$(DOCKER_REGISTRY)/$(ORG_NAME)/microtrader-dashboard); do echo $$tag | xargs -I TAG docker push TAG; done
 	${INFO} "Publish complete"
 
 # Saves development image build cache to compressed archive.  NOTE: lbzip2 must be installed

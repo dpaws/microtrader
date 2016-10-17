@@ -1,8 +1,8 @@
 FROM dpaws/microtrader-base
 MAINTAINER Justin Menga <justin.menga@gmail.com>
-LABEL application.component=audit-service
+LABEL application.component=microtrader-audit
 
 # Copy application artefacts
 ARG app_version
 LABEL application.version=${app_version}
-COPY build/jars/audit-service-${app_version}-fat.jar /app/app.jar
+COPY build/jars/microtrader-audit-${app_version}-fat.jar /app/app.jar

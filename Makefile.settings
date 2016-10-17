@@ -8,10 +8,6 @@ REL_COMPOSE_FILE := docker/release/docker-compose.yml
 REL_PROJECT := $(PROJECT_NAME)$(BUILD_ID)
 TEST_PROJECT := $(REL_PROJECT)test
 
-# Application and Test Service Name - must match Docker Compose test/release specification application/test service names
-APP_SERVICE_NAME := app
-TEST_SERVICE_NAME := test
-
 # Use these settings to specify a custom Docker registry
 DOCKER_REGISTRY ?= docker.io
 
