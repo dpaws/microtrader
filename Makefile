@@ -7,6 +7,7 @@ PROJECT_NAME ?= microtrader
 ORG_NAME ?= dpaws
 REPO_NAME ?= microtrader
 TEST_REPO_NAME ?= microtrader-dev
+DOCKER_REGISTRY ?= docker.io
 
 # Release settings
 export HTTP_PORT ?= 8000
@@ -53,7 +54,7 @@ release: init
 	${INFO} "Pulling latest images..."
 	@ $(if $(NOPULL_ARG),,docker-compose $(RELEASE_ARGS) pull db quote-agent audit-agent)
 	${INFO} "Building images..."
-	@ docker-compose $(RELEASE_ARGS) build $(NOPULL_FLAG) microtrader-dashboard microtrader-quote microtrader-audit microtrader-portfolio microtrader-specs
+	@ docker-compose $(RELEASE_ARGS) build $(NOPULL_FLAG) microtrader-dashboard microtrader-quote microtrader-audit microtrader-portfolio specs
 	${INFO} "Starting audit database..."
 	@ docker-compose $(RELEASE_ARGS) run audit-db-agent
 	${INFO} "Running audit migrations..."
@@ -68,9 +69,9 @@ release: init
 	@ docker-compose $(RELEASE_ARGS) run trader-agent
 	${INFO} "Release environment created"
 	${INFO} "Running acceptance tests..."
-	@ docker-compose $(RELEASE_ARGS) up microtrader-specs
-	@ docker cp $$(docker-compose $(RELEASE_ARGS) ps -q microtrader-specs):/reports/. build/test-results/specs/
-	${CHECK} $(REL_PROJECT) $(REL_COMPOSE_FILE) microtrader-specs
+	@ docker-compose $(RELEASE_ARGS) up specs
+	@ docker cp $$(docker-compose $(RELEASE_ARGS) ps -q specs):/reports/. build/test-results/specs/
+	${CHECK} $(REL_PROJECT) $(REL_COMPOSE_FILE) specs
 	${INFO} "Acceptance testing complete"
 	${INFO} "Quote REST endpoint is running at http://$(DOCKER_MACHINE_IP):$(call get_port_mapping,$(RELEASE_ARGS),microtrader-quote,$(HTTP_PORT))$(QUOTE_HTTP_ROOT)"
 	${INFO} "Audit REST endpoint is running at http://$(DOCKER_MACHINE_IP):$(call get_port_mapping,$(RELEASE_ARGS),microtrader-audit,$(HTTP_PORT))$(AUDIT_HTTP_ROOT)"
@@ -98,7 +99,7 @@ clean%release:
 	@ docker-compose $(RELEASE_ARGS) down -v || true
 
 # 'make tag <tag> [<tag>...]' tags development and/or release image with specified tag(s)
-tag: init
+tag:
 	${INFO} "Tagging development image with tags $(TAG_ARGS)..."
 	@ $(foreach tag,$(TAG_ARGS), echo $(call get_image_id,$(TEST_ARGS),test) | xargs -I ARG docker tag ARG $(DOCKER_REGISTRY)/$(ORG_NAME)/$(TEST_REPO_NAME):$(tag);)
 	${INFO} "Tagging release images with tags $(TAG_ARGS)..."

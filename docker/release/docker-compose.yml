@@ -16,7 +16,7 @@ networks:
 # HTTP_PUBLIC_PORT:   The port that will be registered in service discovery
 #                     If using an external load balancer, set this value to the port of the external load balancer
 services:
-  microtrader-specs:
+  specs:
     build:
       context: ../../
       dockerfile: docker/release/Dockerfile.specs
