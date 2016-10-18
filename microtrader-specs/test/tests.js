@@ -14,9 +14,8 @@ var chai = require('chai'),
 
 chai.use(chaiAsPromised).use(chaiJsonSchema);
 
-var url = process.env.URL || 'http://localhost:8000/';
-var quoteUrl = process.env.QUOTE_URL || 'http://localhost:8000/quote/';
-var auditUrl = process.env.AUDIT_URL || 'http://localhost:8000/audit/';
+var quoteUrl = process.env.QUOTE_URL || 'http://localhost:35000/';
+var auditUrl = process.env.AUDIT_URL || 'http://localhost:33000/';
 var dashboardUrl = process.env.DASHBOARD_URL || 'http://localhost:8000/';
 var eventbusUrl = dashboardUrl + 'eventbus/';
 var discoveryUrl = dashboardUrl + 'discovery/';
