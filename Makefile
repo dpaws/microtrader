@@ -8,6 +8,7 @@ ORG_NAME ?= dpaws
 REPO_NAME ?= microtrader
 TEST_REPO_NAME ?= microtrader-dev
 DOCKER_REGISTRY ?= docker.io
+TEST_DIR ?= shippable/testresults/
 
 # Release settings
 export HTTP_PORT ?= 8000
@@ -41,6 +42,8 @@ test: init
 	@ docker-compose $(TEST_ARGS) build $(NOPULL_FLAG) test
 	${INFO} "Running tests..."
 	@ docker-compose $(TEST_ARGS) up test
+	@ mkdir -p $(TEST_DIR)
+	@ docker cp $$(docker-compose $(TEST_ARGS) ps -q test):/app/build/test-results/junit/. $(TEST_DIR)
 	${CHECK} $(TEST_PROJECT) $(TEST_COMPOSE_FILE) test
 	${INFO} "Removing existing artefacts..."
 	@ rm -rf build

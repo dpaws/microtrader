@@ -1,0 +1,9 @@
+language: python
+
+build:
+  cache: true
+  ci:
+    - pip install -U docker-compose
+    - make test
+    - make release
+    - make clean
