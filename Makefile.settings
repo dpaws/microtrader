@@ -5,7 +5,7 @@ TEST_COMPOSE_FILE := docker/test/docker-compose.yml
 REL_COMPOSE_FILE := docker/release/docker-compose.yml
 
 # Docker Compose Project Names
-REL_PROJECT := $(PROJECT_NAME)$(BUILD_ID)
+REL_PROJECT := $(PROJECT_NAME)$(BUILD_NUMBER)
 TEST_PROJECT := $(REL_PROJECT)test
 
 # Use these settings to specify a custom Docker registry
@@ -22,10 +22,10 @@ SHELL=/bin/bash -e -o pipefail
 GIT_TIMESTAMP := $(shell echo $$(git log -1 --pretty='format:%cd' --date='format:%Y%m%d%H%M%S'))
 GIT_HASH := $(shell echo $$(git rev-parse --short HEAD))
 GIT_TAG := $(shell echo $$(git tag --points-at HEAD))
-ifeq ($(BUILD_ID),)
+ifeq ($(BUILD_NUMBER),)
   APP_VERSION ?= $(GIT_TIMESTAMP).$(GIT_HASH)
 else
-  APP_VERSION ?= $(GIT_TIMESTAMP).$(GIT_HASH).$(BUILD_ID)
+  APP_VERSION ?= $(GIT_TIMESTAMP).$(GIT_HASH).$(BUILD_NUMBER)
 endif
 export APP_VERSION
 
