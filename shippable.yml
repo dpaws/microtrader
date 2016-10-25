@@ -6,4 +6,8 @@ build:
     - pip install -U docker-compose
     - make test
     - make release
+  on_success:
+    - make tag:default
+    - make publish
+  post_ci:
     - make clean
