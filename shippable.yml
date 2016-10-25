@@ -15,11 +15,8 @@ build:
     - make test
     - make release
   on_success:
-    - make login
     - make tag:default
     - make publish
     - make clean
-    - make logout
   on_failure:
     - make clean
-    - make logout
