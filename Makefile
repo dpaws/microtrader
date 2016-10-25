@@ -23,7 +23,7 @@ export DB_PASSWORD ?= password
 # Common settings
 include Makefile.settings
 
-.PHONY: version test build release clean tag login logout publish compose dcompose database save load demo all
+.PHONY: version test build release clean tag tag%default login logout publish compose dcompose database save load demo all
 
 # Prints version
 version:
@@ -82,10 +82,7 @@ release: init
 
 
 # Executes a full workflow
-all: clean test release
-	@ make tag latest $(APP_VERSION) $(GIT_HASH) $(GIT_TAG)
-	@ make publish
-	@ make clean
+all: clean test release tag-default publish clean
 
 # Cleans environment
 clean: clean-test clean-release
@@ -111,6 +108,10 @@ tag:
 	@ $(foreach tag,$(TAG_ARGS), echo $(call get_image_id,$(RELEASE_ARGS),microtrader-portfolio) | xargs -I ARG docker tag ARG $(DOCKER_REGISTRY)/$(ORG_NAME)/microtrader-portfolio:$(tag);)
 	@ $(foreach tag,$(TAG_ARGS), echo $(call get_image_id,$(RELEASE_ARGS),microtrader-dashboard) | xargs -I ARG docker tag ARG $(DOCKER_REGISTRY)/$(ORG_NAME)/microtrader-dashboard:$(tag);)
 	${INFO} "Tagging complete"
+
+# Tags with default set of tags
+tag%default:
+	@ make tag latest $(APP_VERSION) $(GIT_HASH) $(GIT_TAG)
 
 # Login to Docker registry
 login:
