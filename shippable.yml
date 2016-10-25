@@ -9,5 +9,6 @@ build:
   on_success:
     - make tag:default
     - make publish
-  post_ci:
+    - make clean
+  on_failure:
     - make clean
