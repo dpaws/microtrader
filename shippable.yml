@@ -1,8 +1,5 @@
 language: python
 
-env:
-  - secure: OiuTIvlNjUBLS4t3Ac52LtcmHnba8IDjh0IHEwdZNffTxq5ps0y5UH+LR92NHHfDjZsci7U+prwBsA0qJ3yrVxiQ158NIEa1HRTjMjVlm5n+7HJ/pmNIIW5iWaY3Zxa1+43HswktQJt81rtUOWp7RLRWqeY2/ZBg6uzKX54qLs5wg2E6l7o+VPzfiM/lf7SpYOUYco7fkc4oRVt4zx92mImOP79sSLPnmTMgknX6jE6waO8KjwaOrQkUqyaLVOfxIJiPqm6moXvE+BuPqzBwOxxEARITflvHek5Ua3C5HMXPd+K3LiWpf1+iPdkFyAcEVpJ0uLXFQn+neR+cqEtKmA==
-
 integrations:
   hub:
     - integrationName: dockerhub
