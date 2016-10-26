@@ -1,5 +1,9 @@
 language: python
 
+env:
+  global:
+    - TEST_DIR=shippable/testresults/
+
 integrations:
   hub:
     - integrationName: dockerhub

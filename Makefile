@@ -8,7 +8,7 @@ ORG_NAME ?= dpaws
 REPO_NAME ?= microtrader
 TEST_REPO_NAME ?= microtrader-dev
 DOCKER_REGISTRY ?= docker.io
-TEST_DIR ?= shippable/testresults/
+TEST_DIR ?= build/test-results/
 
 # Release settings
 export HTTP_PORT ?= 8000
