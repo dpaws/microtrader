@@ -8,7 +8,7 @@ ORG_NAME ?= dpaws
 REPO_NAME ?= microtrader
 TEST_REPO_NAME ?= microtrader-dev
 DOCKER_REGISTRY ?= docker.io
-TEST_DIR ?= build/test-results/
+TEST_DIR ?= build/test-results/junit/
 
 # Release settings
 export HTTP_PORT ?= 8000

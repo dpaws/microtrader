@@ -21,7 +21,7 @@ node('DOCKER') {
     }
     finally {
         stage('Collect test reports') {
-            step([$class: 'JUnitResultArchiver', testResults: '**/build/test-results/*.xml'])
+            step([$class: 'JUnitResultArchiver', testResults: '**/build/test-results/junit/*.xml'])
         }
         
         stage('Clean') {
