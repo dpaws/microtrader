@@ -20,7 +20,7 @@ node('DOCKER') {
         }
     }
     finally {
-        stage('Collect test reports') {
+        stage('Results') {
             step([$class: 'JUnitResultArchiver', testResults: '**/build/test-results/junit/*.xml'])
         }
         
