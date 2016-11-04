@@ -1,14 +1,12 @@
 plugins {
   id 'application'
   id 'java'
-  // id 'jacoco'
   id 'com.github.johnrengelman.shadow' version '1.2.3'
 }
 
 allprojects {
   apply plugin: 'application'
   apply plugin: 'java'
-  apply plugin: 'jacoco'
   apply plugin: 'com.github.johnrengelman.shadow'
 
   repositories {
@@ -62,13 +60,6 @@ allprojects {
       html.enabled = false
     }
   }
-
-  // jacoco.reportsDir = file("${rootProject.projectDir}/build/test-results/coverage")
-  // jacocoTestReport {
-  //   reports {
-  //     xml.enabled true
-  //   }
-  // }
 }
 
 task testReport(type: TestReport) {
