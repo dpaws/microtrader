@@ -30,15 +30,10 @@ include Makefile.settings
 version:
 	@ echo $(APP_VERSION)
 
-# Creates workflow infrastucture
-init:
-	${INFO} "Checking networking..."
-	@ $(if $(NETWORK_ID),,docker network create --subnet=$(NETWORK_SUBNET) --gateway=$(NETWORK_GW) $(NETWORK_NAME))
-
 # Runs unit and integration tests
 # Pulls images and base images by default
-# Use 'make test nopull' to disable default pull behaviour
-test: init
+# Use 'make test :nopull' to disable default pull behaviour
+test:
 	${INFO} "Building images..."
 	@ docker-compose $(TEST_ARGS) build $(NOPULL_FLAG) test
 	${INFO} "Running tests..."
@@ -53,8 +48,8 @@ test: init
 	${INFO} "Test complete"
 
 # Builds release image and runs acceptance tests
-# Use 'make release nopull' to disable default pull behaviour
-release: init
+# Use 'make release :nopull' to disable default pull behaviour
+release:
 	${INFO} "Pulling latest images..."
 	@ $(if $(NOPULL_ARG),,docker-compose $(RELEASE_ARGS) pull db quote-agent audit-agent)
 	${INFO} "Building images..."
@@ -88,7 +83,7 @@ all: clean test release tag-default publish clean
 # Cleans environment
 clean: clean-test clean-release
 	${INFO} "Removing dangling images..."
-	@ docker images -q -f dangling=true -f label=application=$(REPO_NAME) | xargs -I ARGS docker rmi -f ARGS
+	@ docker images -q -f dangling=true -f label=application=$(REPO_NAME) | xargs -I ARGS docker rmi -f ARGS || true
 	${INFO} "Clean complete"
 
 clean%test:
@@ -137,35 +132,15 @@ publish:
 	@ for tag in $(call get_repo_tags,$(RELEASE_ARGS),microtrader-dashboard,$(DOCKER_REGISTRY)/$(ORG_NAME)/microtrader-dashboard); do echo $$tag | xargs -I TAG docker push TAG; done
 	${INFO} "Publish complete"
 
-# Saves development image build cache to compressed archive.  NOTE: lbzip2 must be installed
-# 	'make save' will save to current working directory.  E.g. ./<repo_name>.bz2
-#   'make save /path/to/my' will save to /path/to/my.  E.g. /path/to/my/<repo_name>.bz2
-#   'make save s3://bucket/path' will save to AWS S3.  E.g. s3://bucket/path/<repo_name>.bz2
-save:
-	${INFO} "Saving development image $(DOCKER_REGISTRY)/$(ORG_NAME)/$(TEST_REPO_NAME) to $(SAVE_PATH)/$(TEST_REPO_NAME).bz2..."
-	@ $(if $(SAVE_IMAGE_EXISTS),$(TEST_SAVE_CMD),${INFO} "Skipping as development image is not present...")
-	${INFO} "Save complete"
-
-# Loads development image build cache from compressed archive.  NOTE: lbzip2 must be installed
-#   'make load' will load from current working directory.  E.g. ./<repo_name>.bz2
-#   'make load /path/to/my' will load from /path/to/my.  E.g. /path/to/my/<repo_name>.bz2
-#   'make load s3://bucket/path' will load from AWS S3.  E.g. s3://bucket/path/<repo_name>.bz2
-load:
-	${INFO} "Loading cached development image from $(SAVE_PATH)/$(TEST_REPO_NAME).bz2..."
-	@ $(if $(TEST_LOAD_MISSING),${WARNING} "Development image is not available at $(SAVE_PATH)/$(TEST_REPO_NAME).bz2 - skipping load...",)
-	@ $(if $(LOAD_IMAGE_EXISTS),${WARNING} "Development image already present - skipping load...",)
-	@ $(if $(TEST_LOAD_MISSING)$(LOAD_IMAGE_EXISTS),,$(TEST_LOAD_CMD))
-	${INFO} "Load complete"
-
 # Executes docker-compose commands in release environment
 #   e.g. 'make compose ps' is the equivalent of docker-compose -f path/to/dockerfile -p <project-name> ps
 #   e.g. 'make compose run nginx' is the equivalent of docker-compose -f path/to/dockerfile -p <project-name> run nginx
 #
 # Use '--'' after make to pass flags/arguments
 #   e.g. 'make -- compose run --rm nginx' ensures the '--rm' flag is passed to docker-compose and not interpreted by make
-compose: init
+compose:
 	${INFO} "Running docker-compose command in release environment..."
-	@ docker-compose -p $(REL_PROJECT) -f $(REL_COMPOSE_FILE) $(COMPOSE_ARGS)
+	@ docker-compose -p $(REL_PROJECT) -f $(REL_COMPOSE_FILE) $(ARGS)
 
 # Executes docker-compose commands in test environment
 #   e.g. 'make dcompose ps' is the equivalent of docker-compose -f path/to/dockerfile -p <project-name> ps
@@ -173,9 +148,9 @@ compose: init
 #
 # Use '--'' after make to pass flags/arguments
 #   e.g. 'make -- compose run --rm test' ensures the '--rm' flag is passed to docker-compose and not interpreted by make
-dcompose: init
+dcompose:
 	${INFO} "Running docker-compose command in test environment..."
-	@ docker-compose -p $(TEST_PROJECT) -f $(TEST_COMPOSE_FILE) $(DCOMPOSE_ARGS)
+	@ docker-compose -p $(TEST_PROJECT) -f $(TEST_COMPOSE_FILE) $(ARGS)
 
 # IMPORTANT - ensures arguments are not interpreted as make targets
 %:

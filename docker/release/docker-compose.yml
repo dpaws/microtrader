@@ -1,20 +1,5 @@
 version: '2'
 
-networks:
-  default:
-    external:
-      name: ${NETWORK_NAME}
-
-# Standard HTTP settings for Microtrader Services
-#
-# HTTP_ROOT:          The root HTTP path that will be registered in service discovery
-#
-# HTTP_HOST:          The hostname that will be registered in service discovery
-#                     If using an external load balancer, set this value to the DNS name of external load balancer
-#
-# HTTP_PORT:          The port the service will listen on
-# HTTP_PUBLIC_PORT:   The port that will be registered in service discovery
-#                     If using an external load balancer, set this value to the port of the external load balancer
 services:
   specs:
     build:
@@ -41,8 +26,8 @@ services:
       HTTP_PORT: ${HTTP_PORT}
       CLUSTER_GROUP_NAME: microtrader${BUILD_ID}
       CLUSTER_GROUP_PASSWORD: password
-      MARKET_DATA_ADDRESS: ${MARKET_DATA_ADDRESS}   # The event bus address that market data events will be received on
-      PORTFOLIO_ADDRESS: portfolio                  # The event bus address that portfolio events will be received on
+      MARKET_DATA_ADDRESS: ${MARKET_DATA_ADDRESS}   
+      PORTFOLIO_ADDRESS: portfolio                  
       _JAVA_OPTIONS: "-Xms256m -Xmx1g"
     ports:
       - "${HTTP_PORT}"
@@ -57,8 +42,8 @@ services:
       HTTP_ROOT: ${QUOTE_HTTP_ROOT}
       HTTP_HOST: microtrader-quote
       HTTP_PORT: ${HTTP_PORT}
-      MARKET_DATA_ADDRESS: ${MARKET_DATA_ADDRESS}   # The event bus address that market data events will be published to
-      MARKET_PERIOD: ${MARKET_PERIOD}               # The frequency in ms to generate market data events
+      MARKET_DATA_ADDRESS: ${MARKET_DATA_ADDRESS}   
+      MARKET_PERIOD: ${MARKET_PERIOD}               
       CLUSTER_GROUP_NAME: microtrader${BUILD_ID}
       CLUSTER_GROUP_PASSWORD: password
     ports:
@@ -96,7 +81,7 @@ services:
       JDBC_PASSWORD: ${DB_PASSWORD}
       JDBC_DRIVERCLASS: com.mysql.jdbc.Driver
       DB_MIGRATIONS_LOCATION: db/mysql
-      PORTFOLIO_ADDRESS: portfolio  # The event bus address that portfolio events will be received on
+      PORTFOLIO_ADDRESS: portfolio  
     ports:
       - "${HTTP_PORT}"
   db:
