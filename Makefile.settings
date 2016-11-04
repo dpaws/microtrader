@@ -29,13 +29,9 @@ else
 endif
 export APP_VERSION
 
-# Docker machine settings
-DOCKER_MACHINE_NAME := $(shell if docker-machine active > /dev/null 2>&1 ; then echo $$(docker-machine active); fi)
-ifneq ($(DOCKER_MACHINE_NAME),)
-  DOCKER_MACHINE_IP := $(shell docker-machine ip $(DOCKER_MACHINE_NAME))
-else
-  DOCKER_MACHINE_IP := \<docker-host\>
-endif
+# Docker host settings
+DOCKER_HOST_IP := $(shell echo $$DOCKER_HOST | awk -F/ '{printf $$3}' | awk -F: '{printf $$1}')
+DOCKER_HOST_IP := $(if $(DOCKER_HOST_IP),$(DOCKER_HOST_IP),\<docker-host\>)
 
 # Cosmetics
 RED := "\e[1;31m"

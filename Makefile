@@ -72,9 +72,9 @@ release:
 	@ docker cp $$(docker-compose $(RELEASE_ARGS) ps -q specs):/reports/. $(TEST_DIR)
 	${CHECK} $(REL_PROJECT) $(REL_COMPOSE_FILE) specs
 	${INFO} "Acceptance testing complete"
-	${INFO} "Quote REST endpoint is running at http://$(DOCKER_MACHINE_IP):$(call get_port_mapping,$(RELEASE_ARGS),microtrader-quote,$(HTTP_PORT))$(QUOTE_HTTP_ROOT)"
-	${INFO} "Audit REST endpoint is running at http://$(DOCKER_MACHINE_IP):$(call get_port_mapping,$(RELEASE_ARGS),microtrader-audit,$(HTTP_PORT))$(AUDIT_HTTP_ROOT)"
-	${INFO} "Trader dashboard is running at http://$(DOCKER_MACHINE_IP):$(call get_port_mapping,$(RELEASE_ARGS),microtrader-dashboard,$(HTTP_PORT))"
+	${INFO} "Quote REST endpoint is running at http://$(DOCKER_HOST_IP):$(call get_port_mapping,$(RELEASE_ARGS),microtrader-quote,$(HTTP_PORT))$(QUOTE_HTTP_ROOT)"
+	${INFO} "Audit REST endpoint is running at http://$(DOCKER_HOST_IP):$(call get_port_mapping,$(RELEASE_ARGS),microtrader-audit,$(HTTP_PORT))$(AUDIT_HTTP_ROOT)"
+	${INFO} "Trader dashboard is running at http://$(DOCKER_HOST_IP):$(call get_port_mapping,$(RELEASE_ARGS),microtrader-dashboard,$(HTTP_PORT))"
 
 
 # Executes a full workflow
