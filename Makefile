@@ -19,6 +19,7 @@ export MARKET_PERIOD ?= 3000
 export DB_NAME ?= audit
 export DB_USER ?= audit
 export DB_PASSWORD ?= password
+export BUILD_ID ?=
 
 # Common settings
 include Makefile.settings
