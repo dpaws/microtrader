@@ -40,7 +40,7 @@ test:
 	@ docker-compose $(TEST_ARGS) up test
 	@ mkdir -p $(TEST_DIR)
 	@ docker cp $$(docker-compose $(TEST_ARGS) ps -q test):/app/build/test-results/junit/. $(TEST_DIR)
-	${CHECK} $(TEST_PROJECT) $(TEST_COMPOSE_FILE) test
+	@ $(call check_exit_code,$(TEST_ARGS),test)
 	${INFO} "Removing existing artefacts..."
 	@ rm -rf build
 	${INFO} "Copying build artefacts..."
@@ -72,7 +72,7 @@ release:
 	${INFO} "Running acceptance tests..."
 	@ docker-compose $(RELEASE_ARGS) up specs
 	@ docker cp $$(docker-compose $(RELEASE_ARGS) ps -q specs):/reports/. $(TEST_DIR)
-	${CHECK} $(REL_PROJECT) $(REL_COMPOSE_FILE) specs
+	@ $(call check_exit_code,$(RELEASE_ARGS),specs)
 	${INFO} "Acceptance testing complete"
 	${INFO} "Quote REST endpoint is running at http://$(DOCKER_HOST_IP):$(call get_port_mapping,$(RELEASE_ARGS),microtrader-quote,$(HTTP_PORT))$(QUOTE_HTTP_ROOT)"
 	${INFO} "Audit REST endpoint is running at http://$(DOCKER_HOST_IP):$(call get_port_mapping,$(RELEASE_ARGS),microtrader-audit,$(HTTP_PORT))$(AUDIT_HTTP_ROOT)"

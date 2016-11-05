@@ -22,12 +22,7 @@ SHELL=/bin/bash -e -o pipefail
 GIT_TIMESTAMP := $(shell echo $$(git log -1 --pretty='format:%cd' --date='format:%Y%m%d%H%M%S'))
 GIT_HASH := $(shell echo $$(git rev-parse --short HEAD))
 GIT_TAG := $(shell echo $$(git tag --points-at HEAD))
-ifeq ($(BUILD_ID),)
-  APP_VERSION ?= $(GIT_TIMESTAMP).$(GIT_HASH)
-else
-  APP_VERSION ?= $(GIT_TIMESTAMP).$(GIT_HASH).$(BUILD_ID)
-endif
-export APP_VERSION
+export APP_VERSION ?= $(GIT_TIMESTAMP).$(GIT_HASH)$(if $(BUILD_ID),.$(BUILD_ID),)
 
 # Docker host settings
 DOCKER_HOST_IP := $(shell echo $$DOCKER_HOST | awk -F/ '{printf $$3}' | awk -F: '{printf $$1}')
@@ -45,10 +40,22 @@ NOPULL_ARG = $(findstring :nopull,$(ARGS))
 VERBOSE_ARG = $(findstring :verbose,$(ARGS))
 RELEASE_ARGS = -p $(REL_PROJECT) -f $(REL_COMPOSE_FILE) $(VERBOSE_FLAG)
 TEST_ARGS = -p $(TEST_PROJECT) -f $(TEST_COMPOSE_FILE) $(VERBOSE_FLAG)
-
-# Flags
 VERBOSE_FLAG = $(if $(VERBOSE_ARG),--verbose,)
 NOPULL_FLAG = $(if $(NOPULL_ARG),,--pull)
+
+# Extract extra arguments
+ifeq ($(firstword $(MAKECMDGOALS)),$(filter $(firstword $(MAKECMDGOALS)),release test clean compose dcompose))
+  ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+endif
+
+# Extract tag arguments
+ifeq ($(firstword $(MAKECMDGOALS)),$(filter $(firstword $(MAKECMDGOALS)),tag))
+  TAG_ARGS_RAW := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+  ifeq ($(TAG_ARGS_RAW),)
+    $(error You must specify a tag)
+  endif
+  TAG_ARGS += $(foreach tag,$(TAG_ARGS_RAW),$(shell echo $(tag) | sed -e 's/[^a-zA-Z0-9\.\-]/_/g'))
+endif
 
 # Image and Repository Tag introspection functions
 # Syntax: $(call get_image_id,<docker-compose-environment>,<service-name>)
@@ -66,36 +73,18 @@ get_raw_port_mapping = $$(docker-compose $(1) ps -q $(2) | xargs -I ID docker po
 get_port_mapping = $$(echo $$(IFS=':' read -r -a array <<< "$(call get_raw_port_mapping,$(1),$(2),$(3))" && echo "$${array[1]}"))
 
 # Service health functions
-# Syntax: $(call check_service_health,,<docker-compose-environment>,<service-name>)
+# Syntax: $(call check_service_health,<docker-compose-environment>,<service-name>)
 get_service_health = $$(echo $(call get_container_id,$(1),$(2)) | xargs -I ID docker inspect -f '{{ .State.Health.Status }}' ID)
 check_service_health = { \
   until [[ $(call get_service_health,$(1),$(2)) != starting ]]; \
     do sleep 1; \
   done; \
-  if [[ $(call get_service_health,$(1),$(2)) = healthy ]]; \
-    then exit 0; \
-    else echo $(2) failed health check; exit 1; \
+  if [[ $(call get_service_health,$(1),$(2)) != healthy ]]; \
+    then echo $(2) failed health check; exit 1; \
   fi; \
 }
 
-# Check and Inspect Logic
-INSPECT := $$(docker-compose -p $$1 -f $$2 ps -q $$3 | xargs -I ARGS docker inspect -f "{{ .State.ExitCode }}" ARGS)
-CHECK := @bash -c '\
-  if [[ $(INSPECT) -ne 0 ]]; \
-  then exit $(INSPECT); fi' VALUE
-
-# Extract extra arguments
-ifeq ($(firstword $(MAKECMDGOALS)),$(filter $(firstword $(MAKECMDGOALS)),release test clean compose dcompose))
-  ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
-  $(eval $(ARGS):;@:)
-endif
-
-# Extract tag arguments
-ifeq ($(firstword $(MAKECMDGOALS)),$(filter $(firstword $(MAKECMDGOALS)),tag))
-  TAG_ARGS_RAW := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
-  ifeq ($(TAG_ARGS_RAW),)
-    $(error You must specify a tag)
-  endif
-  TAG_ARGS += $(foreach tag,$(TAG_ARGS_RAW),$(shell echo $(tag) | sed -e 's/[^a-zA-Z0-9\.\-]/_/g'))
-  $(eval $(TAG_ARGS_RAW):;@:)
-endif
+# Exit code function
+# Syntax: $(call get_exit_code,<docker-compose-environment>,<service-name>)
+get_exit_code = $$(docker-compose $(1) ps -q $(2) | xargs -I ID docker inspect -f "{{ .State.ExitCode }}" ID)
+check_exit_code = exit $(call get_exit_code,$(1),$(2))
