@@ -60,7 +60,6 @@ endif
 # Image and Repository Tag introspection functions
 # Syntax: $(call get_image_id,<docker-compose-environment>,<service-name>)
 # Syntax: $(call get_repo_tags,<docker-compose-environment>,<service-name>,<fully-qualified-image-name>)
-#
 get_container_id = $$(docker-compose $(1) ps -q $(2))
 get_image_id = $$(echo $(call get_container_id,$(1),$(2)) | xargs -I ARGS docker inspect -f '{{ .Image }}' ARGS)
 filter_repo_tags = $(if $(findstring docker.io,$(1)),$(subst docker.io/,,$(1))[^[:space:]|\$$]*,$(1)[^[:space:]|\$$]*)
@@ -68,7 +67,6 @@ get_repo_tags = $$(echo $(call get_image_id,$(1),$(2)) | xargs -I ID docker insp
 
 # Port introspection functions
 # Syntax: $(call get_port_mapping,<docker-compose-environment>,<service-name>,<internal-port>)
-#
 get_raw_port_mapping = $$(docker-compose $(1) ps -q $(2) | xargs -I ID docker port ID $(3))
 get_port_mapping = $$(echo $$(IFS=':' read -r -a array <<< "$(call get_raw_port_mapping,$(1),$(2),$(3))" && echo "$${array[1]}"))
 
