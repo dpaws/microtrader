@@ -50,22 +50,24 @@ test:
 # Builds release image and runs acceptance tests
 # Use 'make release :nopull' to disable default pull behaviour
 release:
-	${INFO} "Pulling latest images..."
-	@ $(if $(NOPULL_ARG),,docker-compose $(RELEASE_ARGS) pull db quote-agent audit-agent)
 	${INFO} "Building images..."
-	@ docker-compose $(RELEASE_ARGS) build $(NOPULL_FLAG) microtrader-dashboard microtrader-quote microtrader-audit microtrader-portfolio specs
+	@ docker-compose $(RELEASE_ARGS) build $(NOPULL_FLAG) microtrader-dashboard microtrader-quote microtrader-audit microtrader-portfolio db specs
 	${INFO} "Starting audit database..."
-	@ docker-compose $(RELEASE_ARGS) run audit-db-agent
+	@ docker-compose $(RELEASE_ARGS) up -d db
+	@ $(call check_service_health,$(RELEASE_ARGS),db)
 	${INFO} "Running audit migrations..."
 	@ docker-compose $(RELEASE_ARGS) run microtrader-audit java -cp /app/app.jar com.pluralsight.dockerproductionaws.admin.Migrate
 	${INFO} "Starting audit service..."
-	@ docker-compose $(RELEASE_ARGS) run audit-agent
+	@ docker-compose $(RELEASE_ARGS) up -d microtrader-audit
+	@ $(call check_service_health,$(RELEASE_ARGS),microtrader-audit)
 	${INFO} "Starting portfolio service..."
 	@ docker-compose $(RELEASE_ARGS) up -d microtrader-portfolio
 	${INFO} "Starting quote generator..."
-	@ docker-compose $(RELEASE_ARGS) run quote-agent
+	@ docker-compose $(RELEASE_ARGS) up -d microtrader-quote
+	@ $(call check_service_health,$(RELEASE_ARGS),microtrader-quote)
 	${INFO} "Starting trader dashboard..."
-	@ docker-compose $(RELEASE_ARGS) run trader-agent
+	@ docker-compose $(RELEASE_ARGS) up -d microtrader-dashboard
+	@ $(call check_service_health,$(RELEASE_ARGS),microtrader-dashboard)
 	${INFO} "Release environment created"
 	${INFO} "Running acceptance tests..."
 	@ docker-compose $(RELEASE_ARGS) up specs

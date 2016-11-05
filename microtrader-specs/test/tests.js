@@ -184,8 +184,8 @@ describe('Market Events', function() {
   });
 
   it('should receive market data', function(done) {
-    this.timeout(10000);
-    waitUntil().interval(1000).times(10)
+    this.timeout(60000);
+    waitUntil().interval(1000).times(60)
       .condition(function() {
         return quotes.length > 3;
       })
@@ -216,8 +216,8 @@ describe('Portfolio Events', function() {
   });
 
   it('should receive portfolio trading events', function(done) {
-    this.timeout(20000);
-    waitUntil().interval(1000).times(10)
+    this.timeout(60000);
+    waitUntil().interval(1000).times(60)
       .condition(function() {
         return trades.length > 0;
       })

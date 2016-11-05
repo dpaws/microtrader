@@ -85,19 +85,14 @@ services:
     ports:
       - "${HTTP_PORT}"
   db:
-    image: mysql:5.7
+    build:
+      context: .
+      dockerfile: Dockerfile.mysql
     environment:
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
-  quote-agent:
-    image: dpaws/ansible
-    links:
-      - microtrader-quote
-    environment:
-      PROBE_HOST: microtrader-quote
-      PROBE_PORT: ${HTTP_PORT}
   audit-db-agent:
     image: dpaws/ansible
     links:
@@ -105,17 +100,3 @@ services:
     environment:
       PROBE_HOST: db
       PROBE_PORT: 3306
-  audit-agent:
-    image: dpaws/ansible
-    links:
-      - microtrader-audit
-    environment:
-      PROBE_HOST: microtrader-audit
-      PROBE_PORT: ${HTTP_PORT}
-  trader-agent:
-    image: dpaws/ansible
-    links:
-      - microtrader-dashboard
-    environment:
-      PROBE_HOST: microtrader-dashboard
-      PROBE_PORT: ${HTTP_PORT}
