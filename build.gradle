@@ -15,14 +15,14 @@ allprojects {
 
   ext {
     vertxVersion = '3.3.3'
-    commitId = {
-      return "git rev-parse --short HEAD".execute().text.trim()
-    }
     commitTimestamp = {
       return "git log -1 --pretty=format:%cd --date=format:%Y%m%d%H%M%S".execute().text.trim()
     }
+    commitId = {
+      return "git rev-parse --short HEAD".execute().text.trim()
+    }
     buildId = {
-      if (System.getenv("BUILD_NUMBER") != null) return ".${System.getenv("BUILD_NUMBER")}"
+      if (System.getenv("BUILD_ID") != null) return ".${System.getenv("BUILD_ID")}"
       else return ""
     }
   }
