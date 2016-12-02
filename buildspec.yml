@@ -1,0 +1,13 @@
+version: 0.1
+
+phases:
+  build:
+    commands:
+      - make test
+      - make release
+      - make tag:default
+  post_build:
+    commands:
+      - make login
+      - make publish
+      - make logout
