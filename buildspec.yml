@@ -3,6 +3,8 @@ version: 0.1
 phases:
   pre_build:
     commands:
+      - apt-get update -y
+      - apt-get install -y software-properties-common 
       - add-apt-repository ppa:git-core/ppa -y
       - apt-get update -y
       - apt-get install -y build-essential python-pip git
