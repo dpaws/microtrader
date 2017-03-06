@@ -1,10 +1,13 @@
-version: '2'
+version: '2.1'
 
 services:
   specs:
     build:
       context: ../../
       dockerfile: docker/release/Dockerfile.specs
+    depends_on:
+      microtrader-dashboard:
+        condition: service_healthy
     environment:
       QUOTE_URL: http://microtrader-quote:${HTTP_PORT}/${QUOTE_HTTP_ROOT}
       AUDIT_URL: http://microtrader-audit:${HTTP_PORT}/${AUDIT_HTTP_ROOT}
@@ -22,6 +25,11 @@ services:
       args:
         app_version: ${APP_VERSION}
     dns_search: .
+    depends_on:
+      microtrader-audit:
+        condition: service_healthy
+      microtrader-quote:
+        condition: service_healthy
     environment:
       HTTP_PORT: ${HTTP_PORT}
       CLUSTER_GROUP_NAME: microtrader${BUILD_ID}
@@ -54,6 +62,9 @@ services:
       dockerfile: docker/release/Dockerfile.portfolio
       args:
         app_version: ${APP_VERSION}
+    depends_on:
+      microtrader-audit:
+        condition: service_healthy
     dns_search: .
     environment:
       CLUSTER_GROUP_NAME: microtrader${BUILD_ID}
@@ -67,8 +78,6 @@ services:
       args:
         app_version: ${APP_VERSION}
     dns_search: .
-    links:
-      - db
     environment:
       HTTP_ROOT: ${AUDIT_HTTP_ROOT}
       HTTP_HOST: microtrader-audit
@@ -84,6 +93,17 @@ services:
       PORTFOLIO_ADDRESS: portfolio  
     ports:
       - "${HTTP_PORT}"
+  microtrader-migrations:
+    extends:
+      service: microtrader-audit
+    depends_on:
+      db:
+        condition: service_healthy
+    command:
+      - java 
+      - -cp 
+      - /app/app.jar 
+      - com.pluralsight.dockerproductionaws.admin.Migrate
   db:
     build:
       context: .
@@ -93,10 +113,3 @@ services:
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
-  audit-db-agent:
-    image: dpaws/ansible
-    links:
-      - db
-    environment:
-      PROBE_HOST: db
-      PROBE_PORT: 3306

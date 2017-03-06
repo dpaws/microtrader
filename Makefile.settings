@@ -74,18 +74,6 @@ get_repo_tags = $$(echo $(call get_image_id,$(1),$(2)) | xargs -I ID docker insp
 get_raw_port_mapping = $$(docker-compose $(1) ps -q $(2) | xargs -I ID docker port ID $(3))
 get_port_mapping = $$(echo $$(IFS=':' read -r -a array <<< "$(call get_raw_port_mapping,$(1),$(2),$(3))" && echo "$${array[1]}"))
 
-# Service health functions
-# Syntax: $(call check_service_health,<docker-compose-environment>,<service-name>)
-get_service_health = $$(echo $(call get_container_state,$(1),$(2),{{if .State.Running}}{{ .State.Health.Status }}{{end}}))
-check_service_health = { \
-  until [[ $(call get_service_health,$(1),$(2)) != starting ]]; \
-    do sleep 1; \
-  done; \
-  if [[ $(call get_service_health,$(1),$(2)) != healthy ]]; \
-    then echo $(2) failed health check; exit 1; \
-  fi; \
-}
-
 # Tagging and Publishing functions
 # Syntax: $(call tag_image,<docker-compose-environment>,<service-name>,<fully-qualified-tag>)
 # Syntax: $(call publish_image,<docker-compose-environment>,<service-name>,<fully-qualified-repository>)
