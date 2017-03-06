@@ -105,9 +105,11 @@ services:
       - /app/app.jar 
       - com.pluralsight.dockerproductionaws.admin.Migrate
   db:
-    build:
-      context: .
-      dockerfile: Dockerfile.mysql
+    image: mysql:5.7
+    healthcheck:
+      test: ["CMD", "mysqlshow", "-u", "${DB_USER}", "-p${DB_PASSWORD}"]
+      interval: 3s
+      retries: 20
     environment:
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_USER: ${DB_USER}
