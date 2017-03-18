@@ -1,4 +1,4 @@
-node('DOCKER') {
+node('docker') {
     checkout scm
 
     try {
