@@ -36,7 +36,7 @@ services:
       CLUSTER_GROUP_PASSWORD: password
       MARKET_DATA_ADDRESS: ${MARKET_DATA_ADDRESS}   
       PORTFOLIO_ADDRESS: portfolio                  
-      _JAVA_OPTIONS: "-Xms256m -Xmx1g"
+      JAVA_TOOL_OPTIONS: "-Xmx672m -XX:MaxMetaspaceSize=128m"
     ports:
       - "${HTTP_PORT}"
   microtrader-quote:
@@ -102,7 +102,7 @@ services:
     command:
       - java 
       - -cp 
-      - /app/app.jar 
+      - /app/app.jar
       - com.pluralsight.dockerproductionaws.admin.Migrate
   db:
     image: mysql:5.7
