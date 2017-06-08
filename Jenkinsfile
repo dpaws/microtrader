@@ -12,9 +12,11 @@ node('docker') {
 
             stage('Publish') {
                 sh 'make tag:default'
-                withEnv(["DOCKER_USER=${DOCKER_USER}",
-                         "DOCKER_PASSWORD=${DOCKER_PASSWORD}"]) {    
-                    sh 'make login'
+                 withCredentials([usernamePassword(
+                    credentialsId: 'docker-hub',
+                    usernameVariable: 'DOCKER_USER', 
+                    passwordVariable: 'DOCKER_PASSWORD')]) {
+                      sh 'make login'
                 }
                 sh 'make publish'
             }
